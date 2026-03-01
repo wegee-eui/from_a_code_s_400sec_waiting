@@ -18,7 +18,6 @@
 
         #container { width: 100%; height: 100%; position: relative; }
 
-        /* --- 캐릭터 설정 --- */
         #character {
             position: fixed; top: 0; left: 0;
             width: 40px; 
@@ -29,7 +28,7 @@
         }
         #fly-img { width: 100%; height: auto; display: block; }
 
-        /* --- 대기 화면 (거대 눈 버전) --- */
+        /* --- 대기 화면 레이아웃 보정 --- */
         #waiting-overlay {
             display: none; position: fixed; top: 0; left: 0;
             width: 100%; height: 100%; background-color: black; z-index: 20;
@@ -39,64 +38,37 @@
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             text-align: center; 
-            width: 90%; /* 전체 컨텐츠 너비 */
+            width: max-content; /* 내부 글자 길이에 맞춰 박스 확장 */
+            max-width: 95vw;    /* 화면 너비 95%까지 허용 */
         }
 
         #status-msg {
-            color: white; 
-            font-size: 5vw; /* 기존 크기 유지 */
-            font-weight: 800;
-            display: inline-block; /* 내용물만큼 박스 너비 확장 */
-            margin-bottom: 20px; 
-            letter-spacing: -0.02em;
-            
-            /* --- 핵심 수정 부분 --- */
-            white-space: nowrap;   /* 줄바꿈 방지 */
-            width: auto;           /* 고정 너비 해제 */
-            max-width: none;       /* 최대 너비 제한 해제 */
+            color: white; font-size: 5vw; font-weight: 800;
+            display: block; margin-bottom: 20px; letter-spacing: -0.02em;
+            white-space: nowrap; /* 모바일 줄바꿈 절대 방지 */
         }
 
-        /* 텍스트가 화면보다 넓어질 경우 전체 레이아웃 정렬 보정 */
-        #waiting-content {
-            position: absolute; 
-            top: 50%; 
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center; 
-            width: max-content; /* 컨텐츠의 실제 길이에 박스를 맞춤 */
-            max-width: 95vw;    /* 화면 밖으로 너무 나가지 않게 최소한의 안전장치 */
-        }
-        /* 눈 크기를 가로 기준 화면의 70% 정도로 설정 */
         .eyes-wrapper { 
-            display: flex; 
-            justify-content: center; 
-            gap: 2vw; 
-            width: 70vw; /* 화면의 70% 차지 */
-            margin: 0 auto;
+            display: flex; justify-content: center; gap: 2vw; 
+            width: 70vw; margin: 0 auto;
         }
 
         .eye-container {
-            flex: 1;
-            aspect-ratio: 1.8 / 1; position: relative;
+            flex: 1; aspect-ratio: 1.8 / 1; position: relative;
             display: flex; justify-content: center; align-items: center;
-            overflow: hidden; 
-            background-color: transparent;
+            overflow: hidden; background-color: transparent;
         }
 
         .eye-shape {
-            background-color: white; 
-            width: 70%; height: 85%; /* 쉐입 유지하면서 꽉 차게 */
+            background-color: white; width: 70%; height: 85%;
             position: absolute;
             border-radius: 40% 60% 40% 60% / 30% 70% 30% 70%;
         }
         .eye-container:last-child .eye-shape { transform: scaleX(-1); }
         
-        /* 눈동자 자동 좌우 이동 애니메이션 */
         .pupil { 
-            background-color: black; 
-            width: 35%; aspect-ratio: 1 / 1; 
-            border-radius: 50%; 
-            position: relative; z-index: 5; 
+            background-color: black; width: 35%; aspect-ratio: 1 / 1; 
+            border-radius: 50%; position: relative; z-index: 5; 
             animation: lookAround 3s ease-in-out infinite;
         }
 
@@ -105,25 +77,18 @@
             50% { transform: translateX(20%); }
         }
 
-        /* 1.5초 주기 깜빡임 애니메이션 */
         .waiting-eyelid {
-            position: absolute;
-            top: -110%;
-            left: 0;
-            width: 100%;
-            height: 110%;
-            background-color: black;
-            z-index: 10;
-            animation: waitingBlink 1.5s infinite; /* 1.5초 주기 */
+            position: absolute; top: -110%; left: 0; width: 100%; height: 110%;
+            background-color: black; z-index: 10;
+            animation: waitingBlink 1.5s infinite;
         }
 
         @keyframes waitingBlink {
-            0%, 80% { top: -110%; } /* 약 1.2초간 떠있음 */
-            90% { top: 0%; }        /* 순식간에 감김 */
-            100% { top: -110%; }    /* 다시 떠짐 */
+            0%, 80% { top: -110%; }
+            90% { top: 0%; }
+            100% { top: -110%; }
         }
 
-        /* --- 결과 화면 --- */
         #svgPathContainer {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             display: none; background-color: white; z-index: 30;
@@ -133,6 +98,7 @@
         #ui-overlay { 
             display: none; position: fixed; bottom: 8%; left: 50%; 
             transform: translateX(-50%); text-align: center; z-index: 40; 
+            width: max-content; /* 하단 UI도 길이에 맞춰 확장 */
         }
 
         .credits { 
@@ -141,10 +107,12 @@
         }
         .credits a { color: black; text-decoration: underline; }
 
+        /* --- 다운로드 버튼 줄바꿈 방지 --- */
         #download-btn { 
             padding: 12px 28px; background: black; color: white; 
             border: none; cursor: pointer; font-weight: 500; border-radius: 4px;
             letter-spacing: 0.5px;
+            white-space: nowrap; /* 버튼 글자 줄바꿈 방지 */
         }
     </style>
 </head>
@@ -157,8 +125,7 @@
 
     <div id="waiting-overlay">
         <div id="waiting-content">
-            <span id="status-msg">Waiting for you to comeback<br>
-            for <span id="out-timer">0</span> seconds...</span>
+            <span id="status-msg">Waiting for you to comeback for <span id="out-timer">0</span> seconds...</span>
             <div class="eyes-wrapper">
                 <div class="eye-container">
                     <div class="eye-shape"></div>
@@ -189,7 +156,7 @@
 </div>
 
 <script>
-    const TARGET_SECONDS = 15; 
+    const TARGET_SECONDS = 15; // 테스트용 15초 설정
     let totalOutTimeMs = 0, outStartTime = null, stayStartTime = Date.now();
     let path = [], isFinished = false, msgTimeout = null;
 
@@ -199,7 +166,6 @@
 
     let angle = 0, amplitude = 25, lastMoveTime = Date.now();
 
-    // 캐릭터 이미지 깜빡임 (기존 4초 유지)
     setInterval(() => {
         if (isFinished) return;
         flyImg.src = 'fly_closed.png';
@@ -234,13 +200,14 @@
         e.preventDefault();
     }, { passive: false });
 
+    // --- 대기 상태 진입/복귀 로직 통합 ---
     function userLeft() {
-        if (isFinished) return;
+        if (isFinished || outStartTime) return;
         outStartTime = Date.now();
         msgTimeout = setTimeout(() => {
             char.style.display = 'none';
             waiting.style.display = 'block';
-        }, 200);
+        }, 100); // 모바일 대응을 위해 딜레이 단축
     }
 
     function userReturned() {
@@ -250,13 +217,18 @@
             outStartTime = null;
         }
         clearTimeout(msgTimeout);
-        setTimeout(() => { if (!outStartTime) waiting.style.display = 'none'; }, 500);
+        setTimeout(() => { if (!outStartTime) waiting.style.display = 'none'; }, 300);
     }
 
+    // 모든 이탈 케이스 감지
     window.addEventListener('blur', userLeft);
     window.addEventListener('focus', userReturned);
     document.addEventListener('mouseleave', userLeft);
     document.addEventListener('mouseenter', userReturned);
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) userLeft();
+        else userReturned();
+    });
 
     setInterval(() => {
         if (isFinished) return;
