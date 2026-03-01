@@ -3,307 +3,209 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gaze Project - Follow & Wait</title>
+    <title>400s Gaze - Fly Project</title>
     <style>
         body, html {
-            margin: 0; padding: 0;
-            width: 100%; height: 100%;
-            overflow: hidden;
-            background-color: white; /* 배경색은 흰색 */
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; background-color: white;
             font-family: 'Pretendard', sans-serif;
+            touch-action: none;
         }
 
-        #container {
-            width: 100%; height: 100%;
-            position: relative;
-        }
+        #container { width: 100%; height: 100%; position: relative; }
 
-        /* --- 1. 마우스 및 터치를 따라다니는 캐릭터 설정 --- */
+        /* --- 1. 캐릭터 설정 (이미지 기반) --- */
         #character {
-            position: fixed; /* 마우스/터치 위치에 고정 */
-            top: 0; left: 0;
-            width: 150px; /* 캐릭터 크기는 고정 */
-            height: auto;
-            pointer-events: none; /* 마우스 이벤트를 통과시킴 */
-            /* transform을 사용하여 캐릭터를 위쪽으로 오프셋 시켜 매달린 효과 구현 */
-            transform: translate(-50%, -100%); 
-            display: none; /* 초기에는 숨김 */
-            z-index: 10;
-        }
-
-        .eyes-wrapper {
-            display: flex; justify-content: space-between;
-            width: 100%;
-        }
-
-        .eye-container {
-            flex: 1;
-            aspect-ratio: 1.8 / 1;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .eye-shape {
-            background-color: black; /* 캐릭터 배경색 */
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            border-radius: 40% 60% 40% 60% / 30% 70% 30% 70%;
-        }
-
-        .eye-container:last-child .eye-shape {
-            transform: scaleX(-1);
-        }
-
-        .pupil {
-            background-color: white; /* 캐릭터 눈동자색 */
-            width: 38%;
-            aspect-ratio: 1 / 1;
-            border-radius: 50%;
-            position: absolute;
-            z-index: 1;
-            transition: transform 0.08s ease-out;
+            position: fixed; top: 0; left: 0;
+            width: 30px; /* 요청하신 가로 30px */
+            pointer-events: none; z-index: 10;
+            display: none;
+            /* 캐릭터 상단 중앙을 기준으로 매달림 */
+            transform-origin: top center; 
+            transform: translate(-50%, 0); 
             will-change: transform;
         }
 
-        /* 눈 깜빡임 애니메이션을 위한 눈꺼풀 요소 추가 */
-        .eyelid {
-            position: absolute;
-            top: -110%; /* 평소에는 위쪽으로 숨김 */
-            left: 0;
+        #fly-img {
             width: 100%;
-            height: 110%;
-            background-color: black; /* 눈꺼풀색 */
-            z-index: 2; /* 눈동자 위에 표시 */
-            animation: blink 4s infinite; /* 4초 주기로 무한 반복 */
-        }
-
-        .eye-container:last-child .eyelid {
-            transform: scaleX(-1);
-        }
-
-        /* 0.5초 동안 깜빡이는 애니메이션 정의 */
-        @keyframes blink {
-            0%, 90% { top: -110%; } /* 3.6초 동안 대기 */
-            95% { top: 0%; }        /* 0.2초 동안 닫힘 */
-            100% { top: -110%; }    /* 0.2초 동안 열림 */
-        }
-
-        /* --- 2. 대기 화면 설정 --- */
-        #waiting-overlay {
-            display: none; /* 초기에는 숨김 */
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background-color: black; /* 대기 화면 배경색 */
-            z-index: 20;
-        }
-
-        #waiting-content {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%); /* 화면 정가운데 정렬 */
-            text-align: center;
-            width: 50%; /* 반응형 크기 설정 (눈 비율 유지) */
-            max-width: 600px;
-        }
-
-        #status-msg {
-            color: white;
-            font-size: 2vw; /* 문구 축소 */
-            font-weight: bold;
-            margin-bottom: 20px;
+            height: auto;
             display: block;
         }
 
-        #waiting-eyes {
-            width: 100%;
+        /* --- 2. 대기 화면 (화면 정중앙 배치) --- */
+        #waiting-overlay {
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%; background-color: black; z-index: 20;
         }
 
-        /* 대기 화면용 눈 인스턴스 스타일 (캐릭터와 동일 비율) */
-        #waiting-eyes .eye-container {
-            flex: 1;
-            aspect-ratio: 1.8 / 1;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        #waiting-content {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center; width: 60%; max-width: 400px;
         }
-        #waiting-eyes .eye-shape {
-            background-color: white;
-            width: 70%;
-            height: 85%;
-            position: absolute;
+
+        #status-msg {
+            color: white; font-size: 14px; font-weight: bold;
+            display: block; margin-bottom: 20px; letter-spacing: 1px;
+        }
+
+        /* 대기 화면 눈 (기존 CSS 눈 구조 유지) */
+        .eyes-wrapper { display: flex; justify-content: space-between; gap: 10px; }
+        .eye-container {
+            flex: 1; aspect-ratio: 1.8 / 1; position: relative; overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .eye-shape {
+            background-color: white; width: 100%; height: 100%; position: absolute;
             border-radius: 40% 60% 40% 60% / 30% 70% 30% 70%;
         }
-        #waiting-eyes .eye-container:last-child .eye-shape {
-            transform: scaleX(-1);
-        }
-        #waiting-eyes .pupil {
-            background-color: black;
-            width: 38%;
-            aspect-ratio: 1 / 1;
-            border-radius: 50%;
-            position: absolute;
-            z-index: 1;
-        }
+        .eye-container:last-child .eye-shape { transform: scaleX(-1); }
+        .pupil { background-color: black; width: 40%; aspect-ratio: 1 / 1; border-radius: 50%; }
 
-        /* --- 3. 결과 화면 설정 (기존 코드 유지) --- */
+        /* --- 3. 결과 화면 --- */
         #svgPathContainer {
-            position: absolute; top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            display: none;
-            background-color: white;
-            z-index: 30;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            display: none; background-color: white; z-index: 30;
         }
-
-        #pathSvg { width: 100%; height: 100%; display: block; }
-
-        #ui-overlay {
-            display: none; position: absolute; bottom: 8%;
-            left: 50%; transform: translateX(-50%);
-            text-align: center;
-            z-index: 40;
-        }
-
-        .credits { margin-bottom: 20px; color: black; font-size: 14px; line-height: 1.6; }
-        .credits a { color: black; text-decoration: underline; }
-
-        #download-btn {
-            padding: 12px 24px;
-            background: black;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-        }
+        #pathSvg { width: 100%; height: 100%; }
+        #ui-overlay { display: none; position: fixed; bottom: 8%; left: 50%; transform: translateX(-50%); z-index: 40; }
+        #download-btn { padding: 12px 24px; background: black; color: white; border: none; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div id="container">
     <div id="character">
-        <div class="eyes-wrapper">
-            <div class="eye-container">
-                <div class="eye-shape"></div>
-                <div class="pupil"></div>
-                <div class="eyelid"></div> </div>
-            <div class="eye-container">
-                <div class="eye-shape"></div>
-                <div class="pupil"></div>
-                <div class="eyelid"></div> </div>
-        </div>
+        <img id="fly-img" src="fly.png" alt="fly">
     </div>
 
     <div id="waiting-overlay">
         <div id="waiting-content">
             <span id="status-msg">Waiting for <span id="out-timer">0</span> seconds</span>
-            <div id="waiting-eyes">
-                <div class="eyes-wrapper">
-                    <div class="eye-container">
-                        <div class="eye-shape"></div>
-                        <div class="pupil"></div>
-                    </div>
-                    <div class="eye-container">
-                        <div class="eye-shape"></div>
-                        <div class="pupil"></div>
-                    </div>
-                </div>
+            <div class="eyes-wrapper">
+                <div class="eye-container"><div class="eye-shape"></div><div class="pupil"></div></div>
+                <div class="eye-container"><div class="eye-shape"></div><div class="pupil"></div></div>
             </div>
         </div>
     </div>
 
     <div id="svgPathContainer">
-        <svg id="pathSvg" preserveAspectRatio="xMidYMid meet">
-            <polyline id="pathPolyline" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
+        <svg id="pathSvg"><polyline id="pathPolyline" fill="none" stroke="black" stroke-width="2" stroke-linecap="round"/></svg>
     </div>
 </div>
 
 <div id="ui-overlay">
-    <div class="credits">
-        You waited 400 seconds.<br>
-        Concept & Production: <a href="https://www.instagram.com/wegee.eui/" target="_blank">Wegee @wegee.eui</a>
-    </div>
     <button id="download-btn">이미지 저장하기</button>
 </div>
 
 <script>
-    const TARGET_SECONDS = 400; // 목표 시간
-    const MSG_DELAY_MS = 200; // 나갔을 때 지연 시간 (0.2초)
-    const RETURN_DELAY_MS = 500; // 돌아왔을 때 지연 시간 (0.5초)
+    const TARGET_SECONDS = 400;
+    let totalOutTimeMs = 0, outStartTime = null, stayStartTime = Date.now();
+    let path = [], isFinished = false, msgTimeout = null;
 
-    let totalOutTimeMs = 0;
-    let outStartTime = null;
-    let stayStartTime = Date.now();
-    let path = [];
-    let isFinished = false;
-    let msgTimeout = null;
+    const char = document.getElementById('character');
+    const flyImg = document.getElementById('fly-img');
+    const waiting = document.getElementById('waiting-overlay');
 
-    const character = document.getElementById('character');
-    const waitingOverlay = document.getElementById('waiting-overlay');
-    const outTimerSpan = document.getElementById('out-timer');
+    // 스윙 관련 변수
+    let angle = 0;
+    let amplitude = 25; // 초기 흔들림 강도
+    let lastMoveTime = Date.now();
 
-    // --- 캐릭터 위치 및 눈동자 움직임 업데이트 함수 ---
-    function updateCharacterPosition(clientX, clientY) {
+    // 1. 눈 깜빡임 로직 (이미지 교체)
+    setInterval(() => {
         if (isFinished) return;
-        path.push({ x: clientX, y: clientY });
+        flyImg.src = 'fly_closed.png';
+        setTimeout(() => {
+            flyImg.src = 'fly.png';
+        }, 200); // 0.2초 동안 감음
+    }, 4000); // 4초 주기
 
-        // 캐릭터 표시 및 위치 설정
-        character.style.display = 'block'; 
-        character.style.left = clientX + 'px';
-        character.style.top = clientY + 'px';
+    // 2. 대롱거리는 스윙 애니메이션
+    function animateSwing() {
+        if (isFinished) return;
 
-        // 캐릭터 눈동자 움직임 제어
-        const pupils = character.querySelectorAll('.pupil');
-        pupils.forEach(pupil => {
-            const rect = pupil.parentElement.getBoundingClientRect();
-            const eyeX = rect.left + rect.width / 2;
-            const eyeY = rect.top + rect.height / 2;
-            const angle = Math.atan2(clientY - eyeY, clientX - eyeX);
-            const maxMove = rect.width / 5;
-            const dist = Math.min(maxMove, Math.hypot(clientX - eyeX, clientY - eyeY) / 10);
-            pupil.style.transform = `translate(${Math.cos(angle) * dist}px, ${Math.sin(angle) * dist}px)`;
-        });
+        const now = Date.now();
+        const idleTime = (now - lastMoveTime) / 1000; // 마지막 이동 후 흐른 시간(초)
+        
+        // 시간이 지날수록 흔들림(진폭) 감소 (감쇠 진동)
+        // 20초가 지나면 거의 멈춤
+        const currentAmplitude = Math.max(0, amplitude * Math.exp(-0.15 * idleTime));
+        
+        angle += 0.15; // 흔들림 속도
+        const rotation = Math.sin(angle) * currentAmplitude;
+        
+        char.style.transform = `translate(-50%, 0) rotate(${rotation}deg)`;
+        
+        requestAnimationFrame(animateSwing);
+    }
+    animateSwing();
+
+    function updatePos(x, y) {
+        if (isFinished || outStartTime) return;
+        path.push({ x, y });
+        char.style.display = 'block';
+        char.style.left = x + 'px';
+        char.style.top = y + 'px';
+        
+        // 움직일 때마다 흔들림 강도 초기화 (다시 크게 흔들림)
+        lastMoveTime = Date.now();
     }
 
-    // --- 1. 데스크탑 마우스 추적 이벤트 ---
-    window.addEventListener('mousemove', (e) => {
-        updateCharacterPosition(e.clientX, e.clientY);
-    });
+    window.addEventListener('mousemove', e => updatePos(e.clientX, e.clientY));
+    window.addEventListener('touchmove', e => {
+        const t = e.touches[0];
+        updatePos(t.clientX, t.clientY);
+        e.preventDefault();
+    }, { passive: false });
 
-    // --- 2. 모바일 터치 추적 이벤트 추가 ---
-    window.addEventListener('touchmove', (e) => {
-        if (e.touches.length > 0) {
-            const touch = e.touches[0]; // 첫 번째 터치 지점 정보
-            updateCharacterPosition(touch.clientX, touch.clientY);
-            
-            // 드로잉 중 화면 스크롤 방지
-            e.preventDefault(); 
-        }
-    }, { passive: false }); // preventDefault() 작동을 위해 passive 옵션을 false로 설정
-
-    // --- 3. 터치 종료 시 캐릭터 숨김 이벤트 추가 ---
-    window.addEventListener('touchend', () => {
-        if (!isFinished && !outStartTime) {
-            character.style.display = 'none'; // 손을 떼면 캐릭터를 숨깁니다.
-        }
-    });
-
-    // --- 4. 시선/존재 동기화 및 대기 화면 제어 ---
+    // --- 이하 기존 타이머 및 결과 로직 동일 ---
     function userLeft() {
         if (isFinished) return;
-        if (!outStartTime) outStartTime = Date.now();
-        
+        outStartTime = Date.now();
         msgTimeout = setTimeout(() => {
-            character.style.display = 'none'; // 캐릭터 숨김
-            waitingOverlay.style.display = 'block'; // 대기 화면 표시
-        }, MSG_DELAY_MS);
+            char.style.display = 'none';
+            waiting.style.display = 'block';
+        }, 200);
     }
 
     function userReturned() {
         if (isFinished) return;
+        if (outStartTime) {
+            totalOutTimeMs += Date.now() - outStartTime;
+            outStartTime = null;
+        }
+        clearTimeout(msgTimeout);
+        setTimeout(() => { if (!outStartTime) waiting.style.display = 'none'; }, 500);
+    }
+
+    window.addEventListener('blur', userLeft);
+    window.addEventListener('focus', userReturned);
+    document.addEventListener('mouseleave', userLeft);
+    document.addEventListener('mouseenter', userReturned);
+
+    setInterval(() => {
+        if (isFinished) return;
+        let currentOut = totalOutTimeMs + (outStartTime ? Date.now() - outStartTime : 0);
+        document.getElementById('out-timer').textContent = Math.floor(currentOut/1000);
+        if (Date.now() - stayStartTime - totalOutTimeMs >= TARGET_SECONDS * 1000) finish();
+    }, 100);
+
+    function finish() {
+        isFinished = true;
+        char.style.display = 'none';
+        waiting.style.display = 'none';
+        document.getElementById('svgPathContainer').style.display = 'block';
+        document.getElementById('ui-overlay').style.display = 'block';
+        const poly = document.getElementById('pathPolyline');
+        if (path.length > 0) {
+            const xs = path.map(p => p.x), ys = path.map(p => p.y);
+            const minX = Math.min(...xs)-50, minY = Math.min(...ys)-50;
+            const w = Math.max(...xs)-minX+50, h = Math.max(...ys)-minY+50;
+            document.getElementById('pathSvg').setAttribute('viewBox', `${minX} ${minY} ${w} ${h}`);
+            poly.setAttribute('points', path.map(p => `${p.x},${p.y}`).join(' '));
+        }
+    }
+</script>
+</body>
+</html>
