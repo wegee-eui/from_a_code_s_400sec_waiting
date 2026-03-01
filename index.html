@@ -27,10 +27,9 @@
             transform-origin: top center; 
             will-change: transform;
         }
-
         #fly-img { width: 100%; height: auto; display: block; }
 
-        /* --- 대기 화면 --- */
+        /* --- 대기 화면 (거대 눈 버전) --- */
         #waiting-overlay {
             display: none; position: fixed; top: 0; left: 0;
             width: 100%; height: 100%; background-color: black; z-index: 20;
@@ -39,54 +38,70 @@
         #waiting-content {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            text-align: center; width: 80%; max-width: 600px;
+            text-align: center; 
+            width: 90%; /* 전체 컨텐츠 너비 */
         }
 
         #status-msg {
             color: white; font-size: 5vw; font-weight: 800;
-            display: block; margin-bottom: 40px; letter-spacing: -0.02em;
+            display: block; margin-bottom: 20px; letter-spacing: -0.02em;
         }
 
-        .eyes-wrapper { display: flex; justify-content: center; gap: 30px; width: 100%; }
+        /* 눈 크기를 가로 기준 화면의 70% 정도로 설정 */
+        .eyes-wrapper { 
+            display: flex; 
+            justify-content: center; 
+            gap: 2vw; 
+            width: 70vw; /* 화면의 70% 차지 */
+            margin: 0 auto;
+        }
+
         .eye-container {
-            width: 150px; 
+            flex: 1;
             aspect-ratio: 1.8 / 1; position: relative;
             display: flex; justify-content: center; align-items: center;
-            /* 눈꺼풀이 눈 밖으로 나가지 않도록 설정 */
             overflow: hidden; 
+            background-color: transparent;
         }
+
         .eye-shape {
             background-color: white; 
-            width: 70%; height: 85%; 
+            width: 100%; height: 85%; /* 쉐입 유지하면서 꽉 차게 */
             position: absolute;
             border-radius: 40% 60% 40% 60% / 30% 70% 30% 70%;
         }
         .eye-container:last-child .eye-shape { transform: scaleX(-1); }
         
+        /* 눈동자 자동 좌우 이동 애니메이션 */
         .pupil { 
             background-color: black; 
             width: 35%; aspect-ratio: 1 / 1; 
             border-radius: 50%; 
             position: relative; z-index: 5; 
+            animation: lookAround 3s ease-in-out infinite;
         }
 
-        /* --- 대기 화면 전용 눈꺼풀 추가 --- */
+        @keyframes lookAround {
+            0%, 100% { transform: translateX(-20%); }
+            50% { transform: translateX(20%); }
+        }
+
+        /* 1.5초 주기 깜빡임 애니메이션 */
         .waiting-eyelid {
             position: absolute;
-            top: -100%; /* 평소엔 위로 숨김 */
+            top: -110%;
             left: 0;
             width: 100%;
-            height: 100%;
+            height: 110%;
             background-color: black;
             z-index: 10;
-            /* 4초 주기, 0.5초 동안 깜빡임 */
-            animation: waitingBlink 4s infinite;
+            animation: waitingBlink 1.5s infinite; /* 1.5초 주기 */
         }
 
         @keyframes waitingBlink {
-            0%, 87.5% { top: -100%; } /* 3.5초 대기 */
-            93.75% { top: 0%; }       /* 0.25초 만에 감김 */
-            100% { top: -100%; }      /* 0.25초 만에 다시 뜸 */
+            0%, 80% { top: -110%; } /* 약 1.2초간 떠있음 */
+            90% { top: 0%; }        /* 순식간에 감김 */
+            100% { top: -110%; }    /* 다시 떠짐 */
         }
 
         /* --- 결과 화면 --- */
@@ -146,8 +161,7 @@
 
 <div id="ui-overlay">
     <div class="credits">
-        You waited for 400 seconds…<br>
-        <br>
+        You waited for 400 seconds…<br><br>
         Concept & Production: <a href="https://www.instagram.com/wegee.eui/" target="_blank">@wegee.eui</a><br>
         ⓒ 2026. Wegee. All rights reserved.
     </div>
@@ -165,7 +179,7 @@
 
     let angle = 0, amplitude = 25, lastMoveTime = Date.now();
 
-    // 따라다니는 캐릭터 눈 깜빡임 (이미지 교체)
+    // 캐릭터 이미지 깜빡임 (기존 4초 유지)
     setInterval(() => {
         if (isFinished) return;
         flyImg.src = 'fly_closed.png';
