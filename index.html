@@ -138,7 +138,7 @@
 
     <div id="waiting-overlay">
         <div id="waiting-content">
-            <span id="status-msg">Waiting for <span id="out-timer">0</span> seconds</span>
+            <span id="status-msg">Waiting for <span id="out-timer">0</span> seconds...</span>
             <div class="eyes-wrapper">
                 <div class="eye-container">
                     <div class="eye-shape"></div>
@@ -169,7 +169,7 @@
 </div>
 
 <script>
-    const TARGET_SECONDS = 15; 
+    const TARGET_SECONDS = 400; 
     let totalOutTimeMs = 0, outStartTime = null, stayStartTime = Date.now();
     let path = [], isFinished = false, msgTimeout = null;
 
